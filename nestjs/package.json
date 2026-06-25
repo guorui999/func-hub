@@ -1,0 +1,41 @@
+{
+  "name": "@funchub/nestjs",
+  "version": "0.1.0",
+  "description": "FuncHub NestJS SDK - A tool registry and dynamic loader for AI agents",
+  "license": "Apache-2.0",
+  "bin": {
+    "funchub": "./dist/cli.js"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest --passWithNoTests",
+    "test:coverage": "jest --coverage --coverageThreshold='{\"global\":{\"lines\":85}}'",
+    "lint": "eslint src/ tests/"
+  },
+  "dependencies": {
+    "commander": "^11.0.0",
+    "node-fetch": "^2.7.0",
+    "semver": "^7.5.0",
+    "js-yaml": "^4.1.0",
+    "zod": "^3.22.0",
+    "execa": "^5.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/node-fetch": "^2.6.0",
+    "@types/semver": "^7.5.0",
+    "@types/js-yaml": "^4.0.0",
+    "@types/jest": "^29.0.0",
+    "typescript": "^5.0.0",
+    "jest": "^29.0.0",
+    "ts-jest": "^29.0.0",
+    "nock": "^13.5.0",
+    "@nestjs/testing": "^10.0.0",
+    "eslint": "^8.0.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
