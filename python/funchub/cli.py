@@ -10,6 +10,12 @@ from funchub.exceptions import ConflictError, FuncHubError, ToolNotFoundError, V
 from funchub.github_client import load_config, save_config
 from funchub.models import ToolDefinition, ToolVersion
 
+# Fix Windows console encoding for emoji and UTF-8
+if sys.platform == "win32":
+    import io
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="replace")
+
 
 @click.group()
 @click.option("--registry", "-r", envvar="FUNCHUB_REGISTRY", help="中央索引 URL")

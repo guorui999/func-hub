@@ -1,4 +1,5 @@
 import json
+import re
 import shutil
 import time
 from pathlib import Path
@@ -61,6 +62,34 @@ class FuncHub:
             tools_raw = data["tools"]
         else:
             tools_raw = data
+
+        # Also load individual tool JSON files from tools/ directory
+        m = re.match(
+            r'https://raw\.githubusercontent\.com/(.+?)/(.+?)/main/(.*)',
+            self._registry_url,
+        )
+        if m:
+            owner, repo, _ = m.groups()
+            tools_api = f"https://api.github.com/repos/{owner}/{repo}/contents/tools"
+            try:
+                file_list_resp = retry_request(
+                    "GET",
+                    tools_api,
+                    headers={"Accept": "application/vnd.github.v3+json"},
+                )
+                if file_list_resp.status_code == 200:
+                    file_list = file_list_resp.json()
+                    for f in file_list:
+                        if f.get("type") == "file" and f["name"].endswith(".json"):
+                            tool_resp = retry_request("GET", f.get("download_url", ""))
+                            if tool_resp.status_code == 200:
+                                tool_data = tool_resp.json()
+                                tool_name = tool_data.get(
+                                    "name", f["name"].replace(".json", "")
+                                )
+                                tools_raw[tool_name] = tool_data
+            except Exception:
+                pass
 
         tools: Dict[str, ToolDefinition] = {}
         for k, v in tools_raw.items():

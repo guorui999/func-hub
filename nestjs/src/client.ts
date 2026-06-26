@@ -84,6 +84,40 @@ export class FuncHub {
       (data.tools as Record<string, unknown>) || data
     );
 
+    // Also load individual tool JSON files from tools/ directory
+    const rawUrl = this.registryUrl;
+    const match = rawUrl.match(
+      /https:\/\/raw\.githubusercontent\.com\/([^/]+)\/([^/]+)\/main\/(.*)/,
+    );
+    if (match) {
+      const [, owner, repo] = match;
+      const toolsApiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/tools`;
+      try {
+        const toolsResp = await retryFetch(toolsApiUrl);
+        if (toolsResp.ok) {
+          const files = (await toolsResp.json()) as Array<Record<string, unknown>>;
+          for (const file of files) {
+            if (
+              file.type === 'file' &&
+              typeof file.download_url === 'string' &&
+              file.download_url.endsWith('.json')
+            ) {
+              const toolResp = await retryFetch(file.download_url);
+              if (toolResp.ok) {
+                const toolData = (await toolResp.json()) as Record<string, unknown>;
+                const name =
+                  (toolData.name as string) ||
+                  file.download_url.split('/').pop()?.replace('.json', '') || '';
+                toolsRaw[name] = toolData;
+              }
+            }
+          }
+        }
+      } catch {
+        // ignore errors loading tools directory
+      }
+    }
+
     const tools: Record<string, ToolDefinition> = {};
     for (const [key, val] of Object.entries(toolsRaw)) {
       if (typeof val === 'object' && val !== null) {
