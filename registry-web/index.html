@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FuncHub Registry</title>
+<link rel="stylesheet" href="style.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+<nav>
+  <div class="nav-inner">
+    <a href="/" class="logo">FuncHub</a>
+    <div class="nav-links">
+      <a href="https://github.com/guorui999/func-hub" target="_blank">GitHub</a>
+      <a href="https://pypi.org/project/funchub-sdk/" target="_blank">PyPI</a>
+      <a href="https://www.npmjs.com/package/funchub-nestjs" target="_blank">npm</a>
+    </div>
+  </div>
+</nav>
+
+<main>
+  <section class="hero">
+    <div class="hero-bg"></div>
+    <h1>FuncHub Registry</h1>
+    <p>Discover, browse, and install AI tools from the community registry</p>
+    <div class="search-box">
+      <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" id="searchInput" placeholder="Search tools by name, description, or author..." autofocus>
+    </div>
+    <div class="hero-stats">
+      <span id="toolCount">0</span> tools registered
+    </div>
+  </section>
+
+  <section class="controls">
+    <div class="filter-group">
+      <button class="filter-btn active" data-filter="all">All</button>
+      <button class="filter-btn" data-filter="python">Python</button>
+      <button class="filter-btn" data-filter="typescript">TypeScript</button>
+    </div>
+    <div class="sort-group">
+      <label>Sort by</label>
+      <select id="sortSelect">
+        <option value="stars">Stars</option>
+        <option value="name">Name</option>
+        <option value="newest">Newest</option>
+        <option value="oldest">Oldest</option>
+      </select>
+    </div>
+  </section>
+
+  <section class="tools-grid" id="toolsGrid">
+    <div class="loading">Loading tools...</div>
+  </section>
+</main>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal" id="toolModal">
+    <button class="modal-close" id="modalClose">&times;</button>
+    <div id="modalContent"></div>
+  </div>
+</div>
+
+<footer>
+  <p>FuncHub Registry &mdash; <a href="https://github.com/funchub-registry/registry" target="_blank">funchub-registry/registry</a></p>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>
