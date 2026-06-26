@@ -1,61 +1,111 @@
 # FuncHub
 
-> ⚠️ **安全警告**: FuncHub 动态加载并执行远程 Git 仓库中的代码。**请确保您信任每个工具的来源**，并在隔离环境中使用。
+> ⚠️ **Security Warning**: FuncHub dynamically loads and executes code from remote Git repositories. **Ensure you trust every tool source** and use in isolated environments.
+
+FuncHub is a dual-language (Python + NestJS) tool registry and dynamic loader designed for AI Agents. It allows developers to publish, discover, install, and dynamically invoke tool functions.
 
 FuncHub 是一个双语言（Python + NestJS）工具注册表与动态加载器，专为 AI Agent 设计。它允许开发者发布、发现、安装和动态调用工具函数。
 
-## 特性
+## Installation / 安装
 
-- **双语言支持**: Python SDK + NestJS SDK，共享相同的设计理念
-- **Semver 版本管理**: 支持 `^1.2.3`、`1.x`、`latest`、分支名等约束
-- **GitHub 发布集成**: 自动 Fork + PR 发布流程（GitHub API v3）
-- **缓存管理**: `.version` 文件追踪已安装版本
-- **私有化部署**: 支持私有索引与镜像
-- **安全确认**: 安装时交互式确认，`--yes` 跳过
+### Python SDK
 
-## 快速开始
+```bash
+pip install funchub-sdk
+```
+
+Import / 导入:
+
+```python
+from funchub import funchub_tool
+
+@funchub_tool
+def my_tool(name: str) -> str:
+    return f"Hello, {name}!"
+```
+
+### NestJS SDK
+
+```bash
+npm install funchub-nestjs
+```
+
+Usage / 使用:
+
+```typescript
+import { FunchubModule } from 'funchub-nestjs';
+```
+
+## Quick Start / 快速开始
 
 ### Python
 
 ```bash
-cd python
-pip install -e ".[dev]"
+# Login with your GitHub PAT
+funchub login --token ghp_xxxxx
+
+# Search tools in the registry
+funchub search scraper
+
+# Install a tool
+funchub install web_scraper@^1.0
+
+# List installed tools
+funchub list
+
+# Publish a tool (from a directory with funchub-tool.yaml)
+cd my-tool/
+funchub publish --version 1.0.0
+```
+
+### NestJS
+
+```bash
 funchub login --token ghp_xxxxx
 funchub search scraper
 funchub install web_scraper@^1.0
 funchub list
 ```
 
-### NestJS
+## Configuration / 配置
+
+| Config Key | Description | Default |
+|-----------|-------------|---------|
+| `registry_repo` | Registry repository (org/repo) | `funchub-registry/registry` |
 
 ```bash
-cd nestjs
-npm install
-npx funchub login --token ghp_xxxxx
-npx funchub search scraper
-npx funchub install web_scraper@^1.0
-npx funchub list
+# Custom registry repo
+funchub config set registry_repo my-org/my-registry
+# Or via environment variable
+set FUNCHUB_REGISTRY_REPO=my-org/my-registry
 ```
 
-## 命令参考
+## Commands / 命令参考
 
-| 命令 | 说明 |
-|------|------|
-| `funchub login --token <PAT>` | 配置 GitHub PAT |
-| `funchub config set <key> <value>` | 设置配置项 |
-| `funchub publish --version v1.0.0` | 发布当前目录工具 |
-| `funchub publish --version v1.0.0 --force` | 覆盖同名工具 |
-| `funchub publish --version v1.0.0 --dry-run` | 预览不实际提交 |
-| `funchub search <query>` | 搜索工具 |
-| `funchub install <name>@<constraint>` | 安装工具 |
-| `funchub install <name>@main` | 安装开发分支 |
-| `funchub list` | 列出本地已安装工具 |
-| `funchub update <name>` | 更新到最新版本 |
-| `funchub update --all` | 更新所有工具 |
-| `funchub info <name>` | 查看工具详情 |
-| `funchub uninstall <name>` | 删除本地缓存 |
+| Command | Description |
+|---------|-------------|
+| `funchub login --token <PAT>` | Configure GitHub PAT |
+| `funchub config set <key> <value>` | Set config option |
+| `funchub publish --version v1.0.0` | Publish tool from current directory |
+| `funchub publish --version v1.0.0 --force` | Overwrite existing tool |
+| `funchub publish --version v1.0.0 --dry-run` | Preview without committing |
+| `funchub search <query>` | Search tools in registry |
+| `funchub install <name>@<constraint>` | Install a tool |
+| `funchub install <name>@main` | Install from a branch |
+| `funchub list` | List installed tools |
+| `funchub update <name>` | Update to latest version |
+| `funchub update --all` | Update all tools |
+| `funchub info <name>` | View tool details |
+| `funchub uninstall <name>` | Remove local cache |
 
-## 项目结构
+## Demo Tools / 示例工具
+
+See `demo-tools/` for example tool projects with `funchub-tool.yaml`:
+
+- `demo-tools/python-tool/` — Python tool example
+- `demo-tools/nestjs-tool/` — NestJS tool example
+
+## Project Structure / 项目结构
 
 ```
 funchub/
@@ -64,18 +114,19 @@ funchub/
 ├── SECURITY.md
 ├── CONTRIBUTING.md
 ├── .github/workflows/
-│   ├── ci.yml         # 并行跑 Python + Node 测试
-│   └── publish.yml    # 打 Tag 时自动发布 PyPI + NPM
-├── python/            # Python SDK
-│   ├── funchub/       # 核心包
-│   ├── tests/         # 测试（覆盖率 ≥ 85%）
+│   ├── ci.yml           # Parallel Python + Node tests
+│   └── publish.yml      # Auto-publish to PyPI + NPM on tags
+├── python/              # Python SDK
+│   ├── funchub/         # Core package
+│   ├── tests/           # Tests (≥ 85% coverage)
 │   └── pyproject.toml
-└── nestjs/            # NestJS SDK
-    ├── src/           # 核心源码
-    ├── tests/         # 测试（覆盖率 ≥ 85%）
-    └── package.json
+├── nestjs/              # NestJS SDK
+│   ├── src/             # Source code
+│   ├── tests/           # Tests (≥ 85% coverage)
+│   └── package.json
+└── demo-tools/          # Sample publishable tools
 ```
 
-## 许可
+## License / 许可
 
 Apache License 2.0
