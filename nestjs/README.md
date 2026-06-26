@@ -1,11 +1,11 @@
-# @funchub/nestjs
+# funchub-nestjs
 
 NestJS SDK for FuncHub - A tool registry and dynamic loader for AI Agents.
 
 ## Installation
 
 ```bash
-npm install @funchub/nestjs
+npm install funchub-nestjs
 ```
 
 ## Usage

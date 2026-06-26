@@ -26,7 +26,7 @@ pip install funchub
 ### NestJS
 
 ```bash
-npm install @funchub/nestjs
+npm install funchub-nestjs
 ```
 
 ---
