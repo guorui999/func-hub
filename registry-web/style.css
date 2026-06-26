@@ -256,11 +256,23 @@ nav {
   margin-top: auto;
   padding-top: 8px;
   border-top: 1px solid var(--border);
+  gap: 8px;
+}
+.tool-card-meta {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.meta-item {
+  font-size: 11px;
+  color: var(--text3);
+  white-space: nowrap;
 }
 .tool-card-version {
   font-size: 12px;
   color: var(--text3);
   font-family: monospace;
+  flex-shrink: 0;
 }
 .tool-card-date {
   font-size: 12px;
@@ -325,6 +337,24 @@ nav {
   gap: 12px;
 }
 .modal-author { font-size: 13px; color: var(--text3); margin-top: 4px; }
+.modal-stats {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+.stat-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  color: var(--text2);
+}
 .modal-desc {
   font-size: 15px;
   color: var(--text2);
