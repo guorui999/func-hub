@@ -12,6 +12,7 @@ const CONFIG_PATH = path.join(CONFIG_DIR, 'config.yaml');
 export interface Config {
   github_token?: string;
   registry?: string;
+  registry_repo?: string;
 }
 
 export function loadConfig(): Config {
@@ -31,6 +32,13 @@ export function saveConfig(cfg: Config): void {
     fs.mkdirSync(CONFIG_DIR, { recursive: true });
   }
   fs.writeFileSync(CONFIG_PATH, yaml.dump(cfg), 'utf-8');
+}
+
+export function resolveRegistryRepo(cliRepo?: string): string {
+  if (cliRepo) return cliRepo;
+  const cfg = loadConfig();
+  if (cfg.registry_repo) return cfg.registry_repo;
+  return 'funchub-registry/registry';
 }
 
 export function resolveRegistry(cliRegistry?: string): string {
@@ -91,11 +99,12 @@ export class GitHubRegistryClient {
   private registryRepo = 'funchub-registry/registry';
   private registryBranch = 'main';
 
-  constructor(private token: string) {
+  constructor(private token: string, registryRepo?: string) {
     this.headers = {
       Authorization: `token ${token}`,
       Accept: 'application/vnd.github.v3+json',
     };
+    this.registryRepo = resolveRegistryRepo(registryRepo);
   }
 
   private apiUrl(pathStr: string): string {

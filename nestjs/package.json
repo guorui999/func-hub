@@ -1,11 +1,14 @@
 {
   "name": "funchub-nestjs",
-  "version": "0.1.1",
+  "version": "0.1.4",
   "description": "FuncHub NestJS SDK - A tool registry and dynamic loader for AI agents",
   "license": "Apache-2.0",
-  "files": ["dist/", "README.md"],
+  "files": [
+    "dist/",
+    "README.md"
+  ],
   "bin": {
-    "funchub": "./dist/cli.js"
+    "funchub": "dist/cli.js"
   },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

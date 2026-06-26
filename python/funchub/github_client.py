@@ -87,16 +87,26 @@ def retry_request(
     raise NetworkError(str(last_exc), attempts=max_retries) from last_exc
 
 
+def resolve_registry_repo(cli_repo: Optional[str] = None) -> str:
+    if cli_repo:
+        return cli_repo
+    cfg = load_config()
+    repo = cfg.get("registry_repo")
+    if repo:
+        return repo
+    return "funchub-registry/registry"
+
+
 class GitHubRegistryClient:
     API_BASE = "https://api.github.com"
 
-    def __init__(self, token: str) -> None:
+    def __init__(self, token: str, registry_repo: Optional[str] = None) -> None:
         self.token = token
         self.headers = {
             "Authorization": f"token {token}",
             "Accept": "application/vnd.github.v3+json",
         }
-        self.registry_repo = "funchub-registry/registry"
+        self.registry_repo = resolve_registry_repo(registry_repo)
         self.registry_branch = "main"
 
     def _api_url(self, path: str) -> str:

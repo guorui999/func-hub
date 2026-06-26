@@ -5,6 +5,7 @@ import fetch from 'node-fetch';
 import {
   GitHubRegistryClient,
   resolveRegistry,
+  resolveRegistryRepo,
   resolveToken,
 } from './github.client';
 import { resolveVersion } from './version.parser';
@@ -160,7 +161,8 @@ export class FuncHub {
     if (!this.token) {
       throw new FuncHubError('请先运行 funchub login 配置 GitHub Token');
     }
-    const client = new GitHubRegistryClient(this.token);
+    const registryRepo = resolveRegistryRepo();
+    const client = new GitHubRegistryClient(this.token, registryRepo);
     return client.publishTool(toolDef, force, dryRun);
   }
 

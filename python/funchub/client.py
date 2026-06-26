@@ -13,6 +13,7 @@ from funchub.github_client import (
     GitHubRegistryClient,
     load_config,
     resolve_registry,
+    resolve_registry_repo,
     resolve_token,
     retry_request,
 )
@@ -139,7 +140,8 @@ class FuncHub:
             raise FuncHubError(
                 "请先运行 funchub login 配置 GitHub Token"
             )
-        client = GitHubRegistryClient(self._token)
+        registry_repo = resolve_registry_repo()
+        client = GitHubRegistryClient(self._token, registry_repo=registry_repo)
         return client.publish_tool(tool_def, force=force, dry_run=dry_run)
 
     def list_installed(self) -> List[Dict[str, str]]:
