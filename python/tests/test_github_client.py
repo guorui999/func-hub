@@ -42,7 +42,7 @@ class TestConfig:
 
     def test_resolve_registry_default(self, monkeypatch: pytest.MonkeyPatch):
         monkeypatch.delenv("FUNCHUB_REGISTRY", raising=False)
-        assert resolve_registry(None) == "https://raw.githubusercontent.com/funchub-registry/registry/main"
+        assert resolve_registry(None) == "https://raw.githubusercontent.com/funchub-registry/registry/main/registry.json"
 
     def test_resolve_token_cli_first(self):
         assert resolve_token("cli_token") == "cli_token"

@@ -1,6 +1,6 @@
 # funchub-nestjs
 
-NestJS SDK for FuncHub - A tool registry and dynamic loader for AI Agents.
+NestJS SDK for FuncHub (`funchub-sdk` for Python) - A tool registry and dynamic loader for AI Agents.
 
 ## Installation
 

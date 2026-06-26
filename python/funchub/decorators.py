@@ -60,6 +60,8 @@ def tool(
     dependencies: Optional[List[str]] = None,
 ):
     def decorator(func: Callable) -> Callable:
+
+
         tool_name = name or func.__name__
         tool_desc = description or (func.__doc__ or "").strip() or tool_name
         parameters = _infer_parameters(func)
@@ -82,3 +84,6 @@ def tool(
         return func
 
     return decorator
+
+
+funchub_tool = tool

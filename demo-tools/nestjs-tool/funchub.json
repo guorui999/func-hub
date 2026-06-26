@@ -1,0 +1,18 @@
+{
+  "name": "hello_greeter",
+  "description": "Generate a personalized greeting message based on name and language",
+  "version": "1.0.0",
+  "entry_point": "hello-tool:hello_greeter",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "name": { "type": "string", "description": "The person's name to greet" },
+      "language": {
+        "type": "string",
+        "enum": ["en", "zh", "ja", "fr", "de"],
+        "description": "Language code for the greeting"
+      }
+    },
+    "required": ["name"]
+  }
+}

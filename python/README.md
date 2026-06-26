@@ -20,7 +20,7 @@ FuncHub is a bilingual (Python + NestJS) tool registry and dynamic loader design
 ### Python
 
 ```bash
-pip install funchub
+pip install funchub-sdk
 ```
 
 ### NestJS

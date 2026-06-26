@@ -38,7 +38,7 @@ export function resolveRegistry(cliRegistry?: string): string {
   if (process.env.FUNCHUB_REGISTRY) return process.env.FUNCHUB_REGISTRY;
   const cfg = loadConfig();
   if (cfg.registry) return cfg.registry;
-  return 'https://raw.githubusercontent.com/funchub-registry/registry/main';
+  return 'https://raw.githubusercontent.com/funchub-registry/registry/main/registry.json';
 }
 
 export function resolveToken(cliToken?: string): string | undefined {

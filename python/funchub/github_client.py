@@ -46,7 +46,7 @@ def resolve_registry(cli_registry: Optional[str] = None) -> str:
     file_reg = cfg.get("registry")
     if file_reg:
         return file_reg
-    return "https://raw.githubusercontent.com/funchub-registry/registry/main"
+    return "https://raw.githubusercontent.com/funchub-registry/registry/main/registry.json"
 
 
 def resolve_token(cli_token: Optional[str] = None) -> Optional[str]:

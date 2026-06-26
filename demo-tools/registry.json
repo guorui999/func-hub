@@ -1,0 +1,55 @@
+{
+  "tools": {
+    "hello_greeter": {
+      "name": "hello_greeter",
+      "description": "Generate a personalized greeting message",
+      "author": "guorui999",
+      "entry_point": "hello_tool:hello_greeter",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string", "description": "Name to greet" },
+          "language": {
+            "type": "string",
+            "enum": ["en", "zh", "ja", "fr", "de"],
+            "default": "en"
+          }
+        },
+        "required": ["name"]
+      },
+      "versions": [
+        {
+          "version": "1.0.0",
+          "source_repo": "https://github.com/guorui999/func-hub",
+          "source_ref": "v1.0.0",
+          "dependencies": [],
+          "released_at": "2026-06-26T00:00:00.000Z",
+          "is_prerelease": false
+        }
+      ]
+    },
+    "web_scraper": {
+      "name": "web_scraper",
+      "description": "Scrape web page title from a URL",
+      "author": "demo",
+      "entry_point": "scraper:scrape_title",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "url": { "type": "string", "description": "The URL to scrape" }
+        },
+        "required": ["url"]
+      },
+      "versions": [
+        {
+          "version": "1.0.0",
+          "source_repo": "https://github.com/demo/web-scraper",
+          "source_ref": "v1.0.0",
+          "dependencies": ["requests", "beautifulsoup4"],
+          "released_at": "2026-01-01T00:00:00.000Z",
+          "is_prerelease": false
+        }
+      ]
+    }
+  }
+}
