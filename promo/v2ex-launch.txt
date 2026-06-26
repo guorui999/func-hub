@@ -1,0 +1,23 @@
+标题: FuncHub – 开源 AI Agent 工具注册表，支持 Python + NestJS
+
+正文:
+
+做 AI Agent 的时候遇到一个问题：每次给 agent 加工具都要硬编码，不同语言的项目还要重复实现。所以做了 FuncHub。
+
+简单说就是：
+• 一个中央工具注册表（基于 Git，存在 GitHub 上）
+• Python 和 NestJS 双语言 SDK
+• 工具发布后，任何语言的 agent 都能发现和调用
+• 有 Web UI 可以浏览
+
+几个设计思路：
+- 注册表就是 GitHub 仓库里的一个 JSON 文件，不需要额外维护数据库
+- 发布走 fork-and-PR 流程，不需要给每个人写权限
+- 写一个 Python 工具，TypeScript agent 也能用
+
+目前我们自己团队在用，欢迎拍砖和建议。
+
+GitHub: https://github.com/guorui999/func-hub
+在线注册表: https://guorui999.github.io/func-hub/
+pip install funchub-sdk
+npm install funchub-nestjs

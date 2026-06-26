@@ -1,0 +1,26 @@
+Subreddit: r/MachineLearning + r/programming
+
+Title: [D] FuncHub – Open-source tool registry for AI agents, PyPI + npm
+
+Body:
+
+I've been working on a tool registry system for AI agents and wanted to share what I've built so far.
+
+**The problem:** AI agents need tools, but there's no standard way to publish, discover, and dynamically load them. Every agent framework reinvents its own plugin system.
+
+**FuncHub is:**
+- A git-based tool registry (just a JSON file in a GitHub repo — no database needed)
+- Python SDK (`funchub-sdk`) with a `@funchub_tool` decorator
+- NestJS SDK (`funchub-nestjs`) for TypeScript agents
+- Dynamic loading from git — tools are cloned and loaded at runtime
+- Web UI to browse/search the registry
+
+**Why git-based?** No infrastructure to maintain. The registry is literally a `registry.json` in a GitHub repo. Publishing uses fork-and-PR, so anyone can contribute without being granted write access.
+
+**Why dual-language?** Agents shouldn't care what language a tool was written in. Publish a Python scraper, use it from your TypeScript agent.
+
+Would love feedback, ideas, or contributors.
+
+https://github.com/guorui999/func-hub
+pip install funchub-sdk
+npm install funchub-nestjs

@@ -1,0 +1,23 @@
+Title: FuncHub – Open-source tool registry for AI agents (Python + NestJS)
+
+Body:
+
+We built FuncHub because our AI agents needed a way to discover and load tools at runtime, without being coupled to a specific language or framework.
+
+It's essentially:
+• A central registry (git-based, GitHub hosted)
+• Python + NestJS SDKs to publish/search/install tools
+• Dynamic loading — tools are cloned from git and invoked at runtime
+• A web UI to browse available tools
+
+Key design decisions:
+- Git-based registry (no database, no infra) — the registry is just a JSON file in a GitHub repo
+- Fork-and-PR publish workflow — anyone can contribute tools without direct write access
+- Dual-language from day one — publish a Python tool, consume it from TypeScript
+
+We're using it internally for agent toolchains and would love feedback from the community.
+
+https://github.com/guorui999/func-hub
+https://guorui999.github.io/func-hub/ (registry web UI)
+pip install funchub-sdk
+npm install funchub-nestjs

@@ -1,0 +1,21 @@
+Tweet 1:
+Built FuncHub — an open-source tool registry for AI agents.
+Publish tools once, discover and invoke from any agent.
+pip install funchub-sdk | npm install funchub-nestjs
+https://github.com/guorui999/func-hub
+
+Tweet 2:
+The idea: agents need tools, but every framework reinvents its own plugin system.
+FuncHub gives you a central registry + dual-language SDKs so any agent can discover and load tools dynamically.
+
+Tweet 3:
+Design highlights:
+• Git-based registry = no infra (just a JSON file in a GitHub repo)
+• Fork-and-PR publish = anyone can contribute
+• Python + TypeScript from day one
+
+Tweet 4:
+Browse the registry online 👇
+https://guorui999.github.io/func-hub/
+
+Open source, Apache 2.0. Feedback welcome!
