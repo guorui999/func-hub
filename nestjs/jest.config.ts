@@ -11,6 +11,7 @@ const config: Config = {
       lines: 85,
     },
   },
+  maxWorkers: 1,
 };
 
 export default config;
