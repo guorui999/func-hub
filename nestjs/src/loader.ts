@@ -1,9 +1,9 @@
 import * as path from 'path';
 import * as os from 'os';
 import * as fs from 'fs';
-import { execa } from 'execa';
+import execa = require('execa');
 import { LoadError, NetworkError } from './exceptions';
-import { ToolDefinition, ToolVersion } from './models';
+import { ToolDefinition } from './models';
 
 const CACHE_BASE = path.join(os.homedir(), '.funchub', 'cache');
 
@@ -31,11 +31,11 @@ async function gitRetry(
   throw new NetworkError(lastError?.message || 'Git operation failed', maxRetries);
 }
 
-export function ensureTool(
+export async function ensureTool(
   toolDef: ToolDefinition,
   targetVersionStr: string,
   yes: boolean = false,
-): string {
+): Promise<string> {
   const versionMeta = toolDef.versions.find((v) => v.version === targetVersionStr);
   if (!versionMeta) {
     throw new LoadError(`版本 ${targetVersionStr} 在工具 ${toolDef.name} 中未找到`);
@@ -60,18 +60,16 @@ export function ensureTool(
 
   if (!yes) {
     console.log('继续安装请按 Y，取消请按 N:');
-    // In CLI context this is handled by commander with --yes flag
-    // For programmatic use, the yes parameter controls this
   }
 
   const sourceRef = versionMeta.source_ref;
 
   if (fs.existsSync(toolCache)) {
-    gitRetry(['fetch', '--tags', '--depth', '1'], toolCache);
-    gitRetry(['checkout', sourceRef], toolCache);
+    await gitRetry(['fetch', '--tags', '--depth', '1'], toolCache);
+    await gitRetry(['checkout', sourceRef], toolCache);
   } else {
     fs.mkdirSync(toolCache, { recursive: true });
-    gitRetry([
+    await gitRetry([
       'clone', '--depth', '1',
       '--branch', sourceRef,
       versionMeta.source_repo,
@@ -80,7 +78,9 @@ export function ensureTool(
   }
 
   if (versionMeta.dependencies && versionMeta.dependencies.length > 0) {
-    gitRetry(['install', ...versionMeta.dependencies], undefined);
+    await execa('npm', ['install', ...versionMeta.dependencies], {
+      timeout: 120_000,
+    });
   }
 
   fs.writeFileSync(versionFile, targetVersionStr, 'utf-8');
@@ -95,7 +95,7 @@ export async function loadFunction(
   targetVersion: string,
   yes: boolean = false,
 ): Promise<CallableFunction> {
-  const toolCache = ensureTool(toolDef, targetVersion, yes);
+  const toolCache = await ensureTool(toolDef, targetVersion, yes);
 
   const entry = toolDef.entry_point;
   if (!entry.includes(':')) {

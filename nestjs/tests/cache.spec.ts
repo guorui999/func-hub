@@ -1,11 +1,22 @@
 import nock from 'nock';
 import * as path from 'path';
-import * as os from 'os';
 import * as fs from 'fs';
+
+const testDir = path.join(__dirname, '..', '.test-cache-' + Date.now());
+
+jest.mock('os', () => {
+  const real = jest.requireActual('os');
+  return {
+    ...real,
+    homedir: () => testDir,
+    tmpdir: () => testDir,
+  };
+});
+
 import { FuncHub } from '../src/client';
 
-const REGISTRY_URL = 'https://example.com/registry.json';
-const testDir = path.join(os.tmpdir(), 'funchub-cache-test-' + Date.now());
+const REGISTRY_HOST = 'https://example.com';
+const REGISTRY_URL = `${REGISTRY_HOST}/registry.json`;
 
 beforeEach(() => {
   if (!fs.existsSync(testDir)) {
@@ -14,25 +25,27 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-  fs.rmSync(testDir, { recursive: true, force: true });
   nock.cleanAll();
+});
+
+afterAll(() => {
+  fs.rmSync(testDir, { recursive: true, force: true });
 });
 
 describe('Cache', () => {
   test('registry cache is written after fetch', async () => {
     const hub = new FuncHub(REGISTRY_URL);
-    nock(REGISTRY_URL)
-      .get('/')
+    nock(REGISTRY_HOST)
+      .get('/registry.json')
       .reply(200, { tools: { test_tool: { name: 'test_tool', description: 'test', parameters: {}, author: 'a', entry_point: 'm:f', versions: [] } } });
 
     await hub.search('test_tool');
-    const cacheDir = path.join(os.homedir(), '.funchub');
-    const cacheFile = path.join(cacheDir, 'registry_cache.json');
+    const cacheFile = path.join(testDir, '.funchub', 'registry_cache.json');
     expect(fs.existsSync(cacheFile)).toBe(true);
   });
 
   test('cached version is read and compared correctly', () => {
-    const toolCache = path.join(os.homedir(), '.funchub', 'cache', 'test_tool');
+    const toolCache = path.join(testDir, '.funchub', 'cache', 'test_tool');
     fs.mkdirSync(toolCache, { recursive: true });
     fs.writeFileSync(path.join(toolCache, '.version'), '1.0.0', 'utf-8');
     const read = fs.readFileSync(path.join(toolCache, '.version'), 'utf-8').trim();
@@ -40,7 +53,7 @@ describe('Cache', () => {
   });
 
   test('source_repo file is written and read', () => {
-    const toolCache = path.join(os.homedir(), '.funchub', 'cache', 'test_tool');
+    const toolCache = path.join(testDir, '.funchub', 'cache', 'test_tool');
     fs.mkdirSync(toolCache, { recursive: true });
     fs.writeFileSync(path.join(toolCache, '.source_repo'), 'https://github.com/test/repo.git', 'utf-8');
     const read = fs.readFileSync(path.join(toolCache, '.source_repo'), 'utf-8').trim();
@@ -48,7 +61,7 @@ describe('Cache', () => {
   });
 
   test('listInstalled reads version and source_repo files', () => {
-    const toolCache = path.join(os.homedir(), '.funchub', 'cache', 'my_installed_tool');
+    const toolCache = path.join(testDir, '.funchub', 'cache', 'my_installed_tool');
     fs.mkdirSync(toolCache, { recursive: true });
     fs.writeFileSync(path.join(toolCache, '.version'), '2.0.0', 'utf-8');
     fs.writeFileSync(path.join(toolCache, '.source_repo'), 'https://example.com/repo.git', 'utf-8');
@@ -61,7 +74,7 @@ describe('Cache', () => {
   });
 
   test('uninstall removes tool cache', () => {
-    const toolCache = path.join(os.homedir(), '.funchub', 'cache', 'removable_tool');
+    const toolCache = path.join(testDir, '.funchub', 'cache', 'removable_tool');
     fs.mkdirSync(toolCache, { recursive: true });
     fs.writeFileSync(path.join(toolCache, '.version'), '1.0.0', 'utf-8');
 

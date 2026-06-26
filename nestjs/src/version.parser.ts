@@ -1,5 +1,10 @@
 import * as semver from 'semver';
 
+function hasPrerelease(v: string): boolean {
+  const parsed = semver.parse(v);
+  return parsed !== null && semver.prerelease(parsed) !== null;
+}
+
 export function resolveVersion(
   availableVersions: string[],
   constraint: string | null = null,
@@ -17,64 +22,45 @@ export function resolveVersion(
     return constraint;
   }
 
-  const parsed: string[] = [];
+  const filtered: string[] = [];
   for (const v of availableVersions) {
-    const coerced = semver.coerce(v);
-    if (!coerced) continue;
-    if (!includePrerelease && semver.prerelease(coerced) !== null) continue;
-    parsed.push(coerced.version);
+    if (!semver.valid(v)) continue;
+    if (!includePrerelease && hasPrerelease(v)) continue;
+    filtered.push(v);
   }
 
-  if (parsed.length === 0) return null;
+  if (filtered.length === 0) return null;
 
   if (constraint === null || constraint === 'latest') {
-    const sorted = semver.rsort(parsed);
-    const raw = sorted[0];
-    if (includePrerelease) {
-      const all: string[] = [];
-      for (const v of availableVersions) {
-        const c = semver.coerce(v);
-        if (c && c.version === raw) {
-          all.push(v);
-        }
-      }
-      const sortedAll = semver.rsort(all);
-      return sortedAll.length > 0 ? sortedAll[0] : raw;
-    }
-    return raw;
+    const sorted = semver.rsort(filtered);
+    return sorted.length > 0 ? sorted[0] : null;
   }
 
   if (availableVersions.includes(constraint)) return constraint;
 
-  const coerced = semver.coerce(constraint);
-  if (coerced && !includePrerelease && semver.prerelease(coerced) !== null) {
-    const exact = availableVersions.find((v) => v === constraint);
-    return exact || null;
-  }
-
   if (constraint.startsWith('^') || constraint.startsWith('~')) {
     const range = semver.validRange(constraint);
     if (range) {
-      const maxSatisfying = semver.maxSatisfying(parsed, range);
-      if (maxSatisfying) {
-        if (includePrerelease) {
-          const prerelease = availableVersions.filter((v) => {
-            const c = semver.coerce(v);
-            return c && c.version === maxSatisfying;
-          });
-          const sorted = semver.rsort(prerelease);
-          return sorted.length > 0 ? sorted[0] : maxSatisfying;
-        }
-        return maxSatisfying;
+      const candidates = filtered.filter((v) => semver.satisfies(v, range));
+      if (candidates.length > 0) {
+        const sorted = semver.rsort(candidates);
+        return sorted[0];
       }
     }
   }
 
-  if (constraint.includes('>') || constraint.includes('<') || constraint.includes('=')) {
+  if (
+    constraint.includes('>') ||
+    constraint.includes('<') ||
+    constraint.includes('=')
+  ) {
     const range = semver.validRange(constraint);
     if (range) {
-      const maxSatisfying = semver.maxSatisfying(parsed, range);
-      if (maxSatisfying) return maxSatisfying;
+      const candidates = filtered.filter((v) => semver.satisfies(v, range));
+      if (candidates.length > 0) {
+        const sorted = semver.rsort(candidates);
+        return sorted[0];
+      }
     }
   }
 
@@ -83,7 +69,12 @@ export function resolveVersion(
     const major = parseInt(majorStr, 10);
     if (isNaN(major)) return null;
     const range = `>=${major}.0.0 <${major + 1}.0.0`;
-    return semver.maxSatisfying(parsed, range) || null;
+    const candidates = filtered.filter((v) => semver.satisfies(v, range));
+    if (candidates.length > 0) {
+      const sorted = semver.rsort(candidates);
+      return sorted[0];
+    }
+    return null;
   }
 
   return null;

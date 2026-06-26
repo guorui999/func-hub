@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import * as path from 'path';
+import * as os from 'os';
 import * as fs from 'fs';
 import { Command } from 'commander';
 import * as yaml from 'js-yaml';
@@ -23,7 +24,7 @@ program
   .command('login')
   .requiredOption('--token <token>', 'GitHub Personal Access Token')
   .action(async (opts: { token: string }) => {
-    const configDir = path.join(require('os').homedir(), '.funchub');
+    const configDir = path.join(os.homedir(), '.funchub');
     const configPath = path.join(configDir, 'config.yaml');
     if (!fs.existsSync(configDir)) {
       fs.mkdirSync(configDir, { recursive: true });
@@ -42,7 +43,7 @@ program
   .argument('<key>', '配置项名称')
   .argument('<value>', '配置项值')
   .action((key: string, value: string) => {
-    const configDir = path.join(require('os').homedir(), '.funchub');
+    const configDir = path.join(os.homedir(), '.funchub');
     const configPath = path.join(configDir, 'config.yaml');
     if (!fs.existsSync(configDir)) {
       fs.mkdirSync(configDir, { recursive: true });
@@ -90,10 +91,16 @@ program
     };
     try {
       const result = await hub.publish(toolDef, opts.force, opts.dryRun);
-      console.log(`发布成功: ${result}`);
+      if (opts.dryRun) {
+        console.log(`[DRY RUN] ${result}`);
+      } else {
+        console.log(`发布成功: ${result}`);
+      }
     } catch (err) {
       if (err instanceof ConflictError || err instanceof FuncHubError) {
         console.error(`错误: ${err.message}`);
+      } else {
+        console.error(err);
       }
       process.exit(1);
     }

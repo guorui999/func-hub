@@ -129,7 +129,6 @@ class Loader:
         module_path, func_name = entry.split(":", 1)
 
         sys.path.insert(0, str(tool_cache))
-
         try:
             mod = importlib.import_module(module_path)
         except ImportError as exc:
@@ -148,4 +147,5 @@ class Loader:
             sys.path.pop(0)
             raise LoadError(f"'{module_path}:{func_name}' 不是可调用对象")
 
+        sys.path.pop(0)
         return func

@@ -14,6 +14,8 @@ def convert_caret_to_specifier(constraint: str) -> Optional[SpecifierSet]:
     if ver.major == 0:
         if ver.minor is not None and ver.minor > 0:
             upper = f"0.{ver.minor + 1}.0"
+        elif ver.minor == 0 and ver.micro is not None and ver.micro > 0:
+            upper = f"0.0.{ver.micro + 1}"
         else:
             upper = f"{ver.major + 1}.0.0"
     else:

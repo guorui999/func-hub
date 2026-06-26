@@ -128,17 +128,21 @@ class GitHubRegistryClient:
         self, repo: str, path: str, branch: Optional[str] = None
     ) -> Optional[Dict[str, Any]]:
         url = self._api_url(f"/repos/{repo}/contents/{path}")
-        params = {}
+        params: Dict[str, str] = {}
         if branch:
             params["ref"] = branch
-        resp = retry_request("GET", url, headers=self.headers)
+        qs = "&".join(f"{k}={v}" for k, v in params.items())
+        full_url = f"{url}?{qs}" if qs else url
+        resp = retry_request("GET", full_url, headers=self.headers)
         if resp.status_code == 404:
             return None
         resp.raise_for_status()
         data = resp.json()
         if isinstance(data, dict) and "content" in data:
             decoded = base64.b64decode(data["content"]).decode("utf-8")
-            return json.loads(decoded)
+            result = json.loads(decoded)
+            result["_gh_sha"] = data.get("sha")
+            return result
         return None
 
     def _get_default_branch_sha(self, repo: str) -> str:
@@ -174,8 +178,8 @@ class GitHubRegistryClient:
             "content": content_b64,
             "branch": branch,
         }
-        if existing and "sha" in existing:
-            body["sha"] = existing["sha"]
+        if existing and "_gh_sha" in existing:
+            body["sha"] = existing["_gh_sha"]
         resp = retry_request("PUT", url, headers=self.headers, json_data=body)
         if resp.status_code not in (200, 201):
             raise FuncHubError(

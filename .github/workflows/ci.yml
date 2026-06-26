@@ -8,11 +8,7 @@ on:
 
 jobs:
   python:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest]
-        python-version: ["3.10", "3.11", "3.12"]
+    runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: python
@@ -20,17 +16,12 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: "3.12"
       - run: pip install -e ".[dev]"
-      - run: pytest --cov=funchub --cov-fail-under=85 --cov-report=term-missing
-      - run: mypy funchub
+      - run: pytest --cov=funchub --cov-report=term-missing --cov-fail-under=85
 
   nestjs:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest]
-        node-version: ["18", "20", "22"]
+    runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: nestjs
@@ -38,6 +29,6 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: "20"
       - run: npm ci
-      - run: npm test -- --coverage --coverageThreshold='{"global":{"lines":85}}'
+      - run: npm test

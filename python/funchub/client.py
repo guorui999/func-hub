@@ -206,7 +206,7 @@ class FuncHub:
                     include_prerelease=include_prerelease,
                     yes=yes,
                 )
-                if new_ver:
+                if new_ver and new_ver != item["version"]:
                     updated.append(f"{item['name']}: {item['version']} -> {new_ver}")
             except FuncHubError:
                 pass

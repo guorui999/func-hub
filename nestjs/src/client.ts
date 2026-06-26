@@ -144,11 +144,12 @@ export class FuncHub {
       }
     }
 
-    const toolCacheResult = ensureTool(toolDef, targetVersion, yes);
-    const entry = toolDef.entry_point;
-    const func = await import(path.join(toolCacheResult, entry));
-    this.funcs.set(toolName, func as unknown as CallableFunction);
-    return func as unknown as CallableFunction;
+    const toolCacheResult = await ensureTool(toolDef, targetVersion, yes);
+    const entrySplit = toolDef.entry_point.split(':', 2);
+    const mod = await import(path.join(toolCacheResult, entrySplit[0]));
+    const func = (mod as Record<string, unknown>)[entrySplit[1]] as CallableFunction;
+    this.funcs.set(toolName, func);
+    return func;
   }
 
   async publish(

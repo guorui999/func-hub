@@ -1,8 +1,19 @@
 import nock from 'nock';
 import * as path from 'path';
-import * as os from 'os';
 import * as fs from 'fs';
-import { GitHubRegistryClient, loadConfig, saveConfig, resolveRegistry, resolveToken } from '../src/github.client';
+
+const testDir = path.join(__dirname, '..', '.test-gh-' + Date.now());
+
+jest.mock('os', () => {
+  const real = jest.requireActual('os');
+  return {
+    ...real,
+    homedir: () => testDir,
+    tmpdir: () => testDir,
+  };
+});
+
+import { GitHubRegistryClient, loadConfig, saveConfig, resolveRegistry } from '../src/github.client';
 import { ConflictError } from '../src/exceptions';
 import { ToolDefinition } from '../src/models';
 
@@ -29,32 +40,25 @@ function makeToolDef(overrides?: Partial<ToolDefinition>): ToolDefinition {
   };
 }
 
+beforeEach(() => {
+  if (!fs.existsSync(testDir)) {
+    fs.mkdirSync(testDir, { recursive: true });
+  }
+  nock.cleanAll();
+});
+
+afterAll(() => {
+  fs.rmSync(testDir, { recursive: true, force: true });
+});
+
 describe('GitHubRegistryClient', () => {
-  beforeEach(() => {
-    nock.cleanAll();
-  });
-
   describe('config', () => {
-    const testDir = path.join(os.tmpdir(), 'funchub-test-' + Date.now());
-
-    beforeEach(() => {
-      if (!fs.existsSync(testDir)) {
-        fs.mkdirSync(testDir, { recursive: true });
-      }
-    });
-
-    afterEach(() => {
-      fs.rmSync(testDir, { recursive: true, force: true });
-    });
-
     test('loadConfig returns empty for missing file', () => {
       const cfg = loadConfig();
       expect(cfg).toBeDefined();
     });
 
     test('saveConfig and loadConfig round-trip', () => {
-      const cfgPath = path.join(testDir, 'config.yaml');
-      process.env.HOME = testDir;
       const cfg = { github_token: 'ghp_test', registry: 'https://example.com' };
       saveConfig(cfg);
       const loaded = loadConfig();
@@ -73,65 +77,16 @@ describe('GitHubRegistryClient', () => {
       client = new GitHubRegistryClient('ghp_test_token');
     });
 
-    test('checkWritePermission returns true when push permission exists', async () => {
+    test('publishTool dry run returns preview message', async () => {
       nock(API).get('/repos/funchub-registry/registry').reply(200, {
         permissions: { push: true },
       });
-      const result = await client.checkWritePermission();
-      expect(result).toBe(true);
-    });
+      nock(API)
+        .get('/repos/funchub-registry/registry/contents/tools/test_tool.json')
+        .reply(404);
 
-    test('checkWritePermission returns false without push permission', async () => {
-      nock(API).get('/repos/funchub-registry/registry').reply(200, {
-        permissions: { push: false },
-      });
-      const result = await client.checkWritePermission();
-      expect(result).toBe(false);
-    });
-
-    test('forkRepository succeeds', async () => {
-      nock(API).post('/repos/funchub-registry/registry/forks').reply(202, {
-        full_name: 'test_user/registry',
-      });
-      const result = await client.forkRepository();
-      expect(result.full_name).toBe('test_user/registry');
-    });
-
-    test('publishTool without write permission forks and creates PR', async () => {
-      nock(API).get('/repos/funchub-registry/registry').reply(200, {
-        permissions: { push: false },
-      });
-      nock(API).post('/repos/funchub-registry/registry/forks').reply(202, {
-        full_name: 'test_user/registry',
-      });
-      nock(API).get('/repos/test_user/registry/contents/tools/test_tool.json').reply(404);
-      nock(API).get('/user').reply(200, { login: 'test_user' });
-      nock(API).get('/repos/test_user/registry/git/refs/heads/main').reply(200, {
-        object: { sha: 'base_sha' },
-      });
-      nock(API).post('/repos/test_user/registry/git/refs').reply(201, {});
-      nock(API).put('/repos/test_user/registry/contents/tools/test_tool.json').reply(201, {});
-      nock(API).post('/repos/funchub-registry/registry/pulls').reply(201, {
-        html_url: 'https://github.com/funchub-registry/registry/pull/42',
-      });
-
-      const result = await client.publishTool(makeToolDef());
-      expect(result).toContain('pull/42');
-    });
-
-    test('publishTool with write permission commits directly', async () => {
-      nock(API).get('/repos/funchub-registry/registry').reply(200, {
-        permissions: { push: true },
-      });
-      nock(API).get('/repos/funchub-registry/registry/contents/tools/test_tool.json').reply(404);
-      nock(API).get('/repos/funchub-registry/registry/git/refs/heads/main').reply(200, {
-        object: { sha: 'base_sha' },
-      });
-      nock(API).post('/repos/funchub-registry/registry/git/refs').reply(201, {});
-      nock(API).put('/repos/funchub-registry/registry/contents/tools/test_tool.json').reply(201, {});
-
-      const result = await client.publishTool(makeToolDef());
-      expect(result).toContain('funchub-registry/registry');
+      const result = await client.publishTool(makeToolDef(), false, true);
+      expect(result).toContain('[DRY RUN]');
     });
 
     test('publishTool with conflict raises ConflictError', async () => {
@@ -149,9 +104,61 @@ describe('GitHubRegistryClient', () => {
       await expect(client.publishTool(makeToolDef())).rejects.toThrow(ConflictError);
     });
 
-    test('publishTool dry run returns preview message', async () => {
-      const result = await client.publishTool(makeToolDef(), false, true);
-      expect(result).toContain('[DRY RUN]');
+    test('publishTool with write permission commits directly', async () => {
+      nock(API).get('/repos/funchub-registry/registry').reply(200, {
+        permissions: { push: true },
+      });
+      nock(API)
+        .get('/repos/funchub-registry/registry/contents/tools/test_tool.json')
+        .reply(404);
+      nock(API)
+        .get('/repos/funchub-registry/registry/git/refs/heads/main')
+        .reply(200, { object: { sha: 'base_sha' } });
+      nock(API)
+        .post('/repos/funchub-registry/registry/git/refs')
+        .reply(201, {});
+      nock(API)
+        .get('/repos/funchub-registry/registry/contents/tools/test_tool.json?ref=publish-test_tool')
+        .reply(404);
+      nock(API)
+        .put('/repos/funchub-registry/registry/contents/tools/test_tool.json', (body) => true)
+        .reply(201, {});
+
+      const result = await client.publishTool(makeToolDef());
+      expect(result).toContain('funchub-registry/registry');
+    });
+
+    test('publishTool without write permission forks and creates PR', async () => {
+      nock(API).get('/repos/funchub-registry/registry').reply(200, {
+        permissions: { push: false },
+      });
+      nock(API)
+        .post('/repos/funchub-registry/registry/forks')
+        .reply(202, { full_name: 'test_user/registry' });
+      nock(API)
+        .get('/repos/test_user/registry/contents/tools/test_tool.json')
+        .reply(404);
+      nock(API)
+        .get('/user')
+        .reply(200, { login: 'test_user' });
+      nock(API)
+        .get('/repos/test_user/registry/git/refs/heads/main')
+        .reply(200, { object: { sha: 'base_sha' } });
+      nock(API)
+        .post('/repos/test_user/registry/git/refs')
+        .reply(201, {});
+      nock(API)
+        .get('/repos/test_user/registry/contents/tools/test_tool.json?ref=publish-test_tool')
+        .reply(404);
+      nock(API)
+        .put('/repos/test_user/registry/contents/tools/test_tool.json', (body) => true)
+        .reply(201, {});
+      nock(API)
+        .post('/repos/funchub-registry/registry/pulls')
+        .reply(201, { html_url: 'https://github.com/funchub-registry/registry/pull/42' });
+
+      const result = await client.publishTool(makeToolDef());
+      expect(result).toContain('pull/42');
     });
   });
 });

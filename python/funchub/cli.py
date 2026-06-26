@@ -70,7 +70,10 @@ def publish(ctx: click.Context, ver: str, force: bool, dry_run: bool) -> None:
     )
     try:
         result = hub.publish(tool_def, force=force, dry_run=dry_run)
-        click.echo(f"发布成功: {result}")
+        if dry_run:
+            click.echo(f"[DRY RUN] {result}")
+        else:
+            click.echo(f"发布成功: {result}")
     except ConflictError as e:
         click.echo(f"错误: {e}", err=True)
         sys.exit(1)
